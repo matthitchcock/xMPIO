@@ -5,8 +5,6 @@ Function Get-RemoveMPIODevice
         $Vendor
     )
 
-    Import-Module -Name MPIO
-
     $Device = Get-MSDSMSupportedHW -VendorId $Vendor -ProductId $ProductID -ErrorAction SilentlyContinue
 
     $Output = @{
@@ -32,8 +30,6 @@ Function Set-RemoveMPIODevice
         $Vendor
     )
 
-    Import-Module -Name MPIO
-
     Remove-MSDSMSupportedHW -VendorId $Vendor -ProductId $ProductID -ErrorAction SilentlyContinue
 }
 
@@ -44,8 +40,6 @@ Function Test-RemoveMPIODevice
     $Vendor
     )
 
-    Import-Module -Name MPIO
-
     [Boolean]$Result = $true
     $Device = Get-MSDSMSupportedHW -VendorId $Vendor -ProductId $ProductID -ErrorAction SilentlyContinue
 
@@ -55,6 +49,65 @@ Function Test-RemoveMPIODevice
     }
 
     return $Result
+}
+
+Function Get-DSMAutomaticClaim
+{
+    Param(
+        $BusType,
+        $Enabled
+    )
+
+    $Settings = Get-MSDSMAutomaticClaimSettings
+
+    $Output = @{
+        BusType = $BusType
+        Enabled = $Settings.$BusType
+        Status = "OK"
+    }
+
+    if ($Settings.$BusType -ne $Enabled)
+    {
+        $Output.Status = "NOK"
+    }
+
+    return $Output
+}
+
+Function Set-DSMAutomaticClaim
+{
+    Param(
+        $BusType,
+        $Enabled
+    )
+
+    switch ($Enabled)
+    {
+        $true {
+            Enable-MSDSMAutomaticClaim -BusType $BusType
+        }
+        $false {
+            Disable-MSDSMAutomaticClaim -BusType $BusType
+        }
+        Default {
+            Write-Verbose -Message "No valid option given"
+        }
+    }
+}
+
+Function Test-DSMAutomaticClaim
+{
+    Param(
+        $BusType,
+        $Enabled
+    )
+
+    [Boolean]$result = $true
+
+    if (-not((Get-MSDSMAutomaticClaimSettings).$BusType -eq $Enabled))
+    {
+        $result = $false
+    }
 }
 
 Export-ModuleMember *
