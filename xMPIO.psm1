@@ -84,10 +84,10 @@ Function Set-DSMAutomaticClaim
     switch ($Enabled)
     {
         $true {
-            Enable-MSDSMAutomaticClaim -BusType $BusType
+            Enable-MSDSMAutomaticClaim -BusType $BusType -ErrorAction SilentlyContinue
         }
         $false {
-            Disable-MSDSMAutomaticClaim -BusType $BusType
+            Disable-MSDSMAutomaticClaim -BusType $BusType -ErrorAction SilentlyContinue
         }
         Default {
             Write-Verbose -Message "No valid option given"
