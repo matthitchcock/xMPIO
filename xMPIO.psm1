@@ -110,4 +110,3 @@ Function Test-DSMAutomaticClaim
     }
 }
 
-Export-ModuleMember *
