@@ -1,51 +1,96 @@
-Function Get-RemoveMPIODevice
+Function Get-MPIODeviceInstalled
 {
     param(
         $ProductID,
-        $Vendor
+        $Vendor,
+        $Ensure
     )
 
     $Device = Get-MSDSMSupportedHW -VendorId $Vendor -ProductId $ProductID -ErrorAction SilentlyContinue
 
     $Output = @{
-        VendorID = "Not Present"
-        ProductID = "Not Present"
-        Status = "Removed"
+        VendorID = $Vendor
+        ProductID = $ProductID
+        Status = ""
     }
 
-    If ($Device)
+    Switch ($Device)
     {
-        $Output.VendorID = $Device.VendorId
-        $Output.ProductID = $Device.ProductId
-        $Output.Status = "Installed"
+        ($Device -ne $null) {$Output.Status = "Present"}
+        ($Device -eq $null) {$Output.Status = "Absent"}
+        default {$Output.Status = "Unknown"}
     }
-
+    
     return $Output
 }
 
-Function Set-RemoveMPIODevice
+Function Set-MPIODeviceInstalled
 {
     param(
         $ProductID,
-        $Vendor
+        $Vendor,
+        $Ensure
     )
 
-    Remove-MSDSMSupportedHW -VendorId $Vendor -ProductId $ProductID -ErrorAction SilentlyContinue
+    $Device = Get-MSDSMSupportedHW -VendorId $Vendor -ProductId $ProductID -ErrorAction SilentlyContinue
+
+    Switch ($Ensure)
+    {
+        'Present' {
+            if ($Device -eq $null)
+            {
+                New-MSDSMSupportedHW -ProductId $ProductID -VendorId $Vendor -ErrorAction SilentlyContinue
+
+                Update-MPIOClaimedHW
+
+                Write-Verbose -Message "Device added"
+            }            
+        }
+        'Absent' {
+            if ($Device -ne $null) {
+                Remove-MSDSMSupportedHW -VendorId $Vendor -ProductId $ProductID -ErrorAction SilentlyContinue
+
+                Update-MPIOClaimedHW
+
+                Write-Verbose -Message "Device removed"
+            }
+        }
+        default {
+            Write-Verbose -Message "No valid action specified"
+        } 
+    }
+
+
 }
 
-Function Test-RemoveMPIODevice
+Function Test-MPIODeviceInstalled
 {
     param(
     $ProductID,
-    $Vendor
+    $Vendor,
+    $Ensure
     )
 
     [Boolean]$Result = $true
     $Device = Get-MSDSMSupportedHW -VendorId $Vendor -ProductId $ProductID -ErrorAction SilentlyContinue
 
-    if ($Device)
+    Switch ($Ensure)
     {
-        $Result = $false
+        'Present' {
+            if ($Device -eq $null)
+            {
+                $Result = $false
+            }
+        }
+        'Absent' {
+            if ($Device -ne $null)
+            {
+                $Result = $false
+            }
+        }
+        default {
+            Write-Verbose -Message "No valid option selected"
+        }
     }
 
     return $Result
@@ -55,7 +100,7 @@ Function Get-DSMAutomaticClaim
 {
     Param(
         $BusType,
-        $Enabled
+        $Ensure
     )
 
     $Settings = Get-MSDSMAutomaticClaimSettings
@@ -66,9 +111,23 @@ Function Get-DSMAutomaticClaim
         Status = "OK"
     }
 
-    if ($Settings.$BusType -ne $Enabled)
+    Switch ($Ensure)
     {
-        $Output.Status = "NOK"
+        'Present' {
+            if ($Settings.BusType -ne $True)
+            {
+                $Output.Status = "NOK"
+            }
+        }
+        'Absent' {
+            if ($Settings.BusType -ne $false)
+            {
+                $Output.Status = "NOK"
+            }           
+        }
+        default {
+            Write-Verbose -Message "No valid option selected"
+        }
     }
 
     return $Output
@@ -78,10 +137,10 @@ Function Set-DSMAutomaticClaim
 {
     Param(
         $BusType,
-        $Enabled
+        $Ensure
     )
 
-    switch ($Enabled)
+    switch ($Ensure)
     {
         $true {
             Enable-MSDSMAutomaticClaim -BusType $BusType -ErrorAction SilentlyContinue
@@ -99,14 +158,31 @@ Function Test-DSMAutomaticClaim
 {
     Param(
         $BusType,
-        $Enabled
+        $Ensure
     )
 
     [Boolean]$result = $true
 
-    if (-not((Get-MSDSMAutomaticClaimSettings).$BusType -eq $Enabled))
+    $Settings = Get-MSDSMAutomaticClaimSettings
+
+    Switch ($Ensure)
     {
-        $result = $false
+        'Present' {
+            if ($Settings.BusType -ne $True)
+            {
+                $Result = $false
+            }
+        }
+        'Absent' {
+            if ($Settings.BusType -ne $false)
+            {
+                $Result = $false
+            }           
+        }
+        default {
+            Write-Verbose -Message "No valid option selected"
+        }
     }
+    return $result
 }
 
