@@ -99,7 +99,7 @@ Function Get-DSMBusClaim
 {
     Param(
         $BusType,
-        $Ensure
+        $Ensure = "Present"
     )
 
     $Settings = Get-MSDSMAutomaticClaimSettings
@@ -113,13 +113,13 @@ Function Get-DSMBusClaim
     Switch ($Ensure)
     {
         'Present' {
-            if ($Settings.BusType -ne $True)
+            if ($Settings.$BusType -ne $True)
             {
                 $Output.Status = "NOK"
             }
         }
         'Absent' {
-            if ($Settings.BusType -ne $false)
+            if ($Settings.$BusType -ne $false)
             {
                 $Output.Status = "NOK"
             }           
@@ -167,13 +167,13 @@ Function Test-DSMBusClaim
     Switch ($Ensure)
     {
         'Present' {
-            if ($Settings.BusType -ne $True)
+            if ($Settings.$BusType -ne $True)
             {
                 $Result = $false
             }
         }
         'Absent' {
-            if ($Settings.BusType -ne $false)
+            if ($Settings.$BusType -ne $false)
             {
                 $Result = $false
             }           
