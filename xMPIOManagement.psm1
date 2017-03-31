@@ -2,8 +2,7 @@ Function Get-MPIODeviceInstalled
 {
     param(
         $ProductID,
-        $Vendor,
-        $Ensure
+        $Vendor
     )
 
     $Device = Get-MSDSMSupportedHW -VendorId $Vendor -ProductId $ProductID -ErrorAction SilentlyContinue
@@ -96,7 +95,7 @@ Function Test-MPIODeviceInstalled
     return $Result
 }
 
-Function Get-DSMAutomaticClaim
+Function Get-DSMBusClaim
 {
     Param(
         $BusType,
@@ -133,7 +132,7 @@ Function Get-DSMAutomaticClaim
     return $Output
 }
 
-Function Set-DSMAutomaticClaim
+Function Set-DSMBusClaim
 {
     Param(
         $BusType,
@@ -154,7 +153,7 @@ Function Set-DSMAutomaticClaim
     }
 }
 
-Function Test-DSMAutomaticClaim
+Function Test-DSMBusClaim
 {
     Param(
         $BusType,
