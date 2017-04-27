@@ -10,14 +10,6 @@ Function Get-MPIODeviceInstalled
     $Output = @{
         VendorID = $Vendor
         ProductID = $ProductID
-        Status = ""
-    }
-
-    Switch ($Device)
-    {
-        ($Device -ne $null) {$Output.Status = "Present"}
-        ($Device -eq $null) {$Output.Status = "Absent"}
-        default {$Output.Status = "Unknown"}
     }
     
     return $Output
@@ -107,7 +99,6 @@ Function Get-DSMBusClaim
     $Output = @{
         BusType = $BusType
         Enabled = $Settings.$BusType
-        Status = "OK"
     }
 
     Switch ($Ensure)
